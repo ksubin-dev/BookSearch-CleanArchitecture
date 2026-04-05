@@ -32,3 +32,10 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Mac OS 숨김 파일
+.DS_Store
+
+# API Key 보안
+secrets.properties
+apikey.properties
