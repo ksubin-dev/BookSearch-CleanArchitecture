@@ -4,11 +4,12 @@ import com.subin.cleanbookstore.core.DataResult
 import com.subin.cleanbookstore.data.mapper.toDomain
 import com.subin.cleanbookstore.data.remote.api.BooksApiService
 import com.subin.cleanbookstore.domain.model.Book
-import com.subin.cleanbookstore.domain.repository.BookRepository
+import com.subin.cleanbookstore.domain.repository.BookSearchRepository
+import javax.inject.Inject
 
-class BookRepositoryImpl(
+class BookSearchRepositoryImpl @Inject constructor(
     private val apiService: BooksApiService
-) : BookRepository {
+) : BookSearchRepository {
 
     override suspend fun searchBooks(query: String): DataResult<List<Book>> {
         return try {
