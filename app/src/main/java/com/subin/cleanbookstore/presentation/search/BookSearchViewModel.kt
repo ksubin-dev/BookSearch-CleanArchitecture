@@ -25,9 +25,7 @@ class BookSearchViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = BookSearchUiState.Loading
 
-            val result = getSearchBooksUseCase(query)
-
-            when (result) {
+            when (val result = getSearchBooksUseCase(query)) {
                 is DataResult.Success -> {
                     val books = result.data
                     if (books.isEmpty()) {

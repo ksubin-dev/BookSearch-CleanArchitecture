@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.subin.cleanbookstore.presentation.search.BookSearchViewModel
@@ -27,13 +26,6 @@ class MainActivity : ComponentActivity() {
                 val viewModel: BookSearchViewModel = hiltViewModel()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-
-                    // 2. 검색 테스트를 위해 화면이 켜지자마자 초기 검색어 실행
-                    // (이슈 #11에서 SearchBar가 생기면 이 부분은 지워질 예정입니다.)
-                    LaunchedEffect(Unit) {
-                        viewModel.searchBooks("android")
-                    }
-
                     Box(modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
@@ -41,7 +33,7 @@ class MainActivity : ComponentActivity() {
                         SearchScreen(
                             viewModel = viewModel,
                             onBookClick = { bookId ->
-                                // 상세 페이지 이동 로직 (이슈 #13 등에서 구현)
+                                // 상세 페이지 이동 로직은 나중에 여기서 처리
                                 Log.d("MainActivity", "클릭된 도서 ID: $bookId")
                             }
                         )
