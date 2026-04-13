@@ -12,33 +12,31 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class BookViewModel @Inject constructor(
+class BookSearchViewModel @Inject constructor(
     private val getSearchBooksUseCase: GetSearchBooksUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<BookUiState>(BookUiState.Empty)
-    val uiState: StateFlow<BookUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow<BookSearchUiState>(BookSearchUiState.Empty)
+    val uiState: StateFlow<BookSearchUiState> = _uiState.asStateFlow()
 
     fun searchBooks(query: String) {
         if (query.isBlank()) return
 
         viewModelScope.launch {
-            _uiState.value = BookUiState.Loading
+            _uiState.value = BookSearchUiState.Loading
 
-            val result = getSearchBooksUseCase(query)
-
-            when (result) {
+            when (val result = getSearchBooksUseCase(query)) {
                 is DataResult.Success -> {
                     val books = result.data
                     if (books.isEmpty()) {
-                        _uiState.value = BookUiState.Empty
+                        _uiState.value = BookSearchUiState.Empty
                     } else {
-                        _uiState.value = BookUiState.Success(books)
+                        _uiState.value = BookSearchUiState.Success(books)
                     }
                 }
                 is DataResult.Error -> {
                     val errorMessage = result.exception.message ?: "검색 중 오류가 발생했습니다."
-                    _uiState.value = BookUiState.Error(errorMessage)
+                    _uiState.value = BookSearchUiState.Error(errorMessage)
                 }
             }
         }
