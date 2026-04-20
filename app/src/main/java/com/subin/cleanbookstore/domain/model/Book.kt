@@ -8,5 +8,6 @@ data class Book(
     val publisher: String,
     val description: String,
     val imageUrl: String,
-    val buyLink: String
+    val buyLink: String,
+    val isFavorite: Boolean = false
 )
