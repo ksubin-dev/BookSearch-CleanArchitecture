@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.subin.cleanbookstore.domain.model.Book
 import com.subin.cleanbookstore.presentation.components.BookItem
 
@@ -24,7 +25,7 @@ fun SearchScreen(
     viewModel: BookSearchViewModel,
     onBookClick: (String) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
@@ -40,7 +41,8 @@ fun SearchScreen(
                 keyboardController?.hide()
             }
         },
-        onBookClick = onBookClick
+        onBookClick = onBookClick,
+        onLikeClick = { book -> viewModel.onBookmarkClick(book) }
     )
 }
 
@@ -50,7 +52,8 @@ private fun SearchContent(
     searchQuery: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
-    onBookClick: (String) -> Unit
+    onBookClick: (String) -> Unit,
+    onLikeClick: (Book) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         OutlinedTextField(
@@ -91,8 +94,9 @@ private fun SearchContent(
                         ) { book ->
                             BookItem(
                                 book = book,
+                                isLiked = book.isFavorite,
                                 onClick = { onBookClick(book.id) },
-                                onLikeClick = { /* TODO: 이슈 #12 좋아요 구현 */ }
+                                onLikeClick = { onLikeClick(book) }
                             )
                         }
                     }
@@ -127,7 +131,8 @@ fun SearchScreenSuccessPreview() {
             publisher = "인사이트",
             description = "",
             imageUrl = "",
-            buyLink = ""
+            buyLink = "",
+            isFavorite = true
         ),
         Book(
             id = "2",
@@ -137,7 +142,8 @@ fun SearchScreenSuccessPreview() {
             publisher = "에이콘",
             description = "",
             imageUrl = "",
-            buyLink = ""
+            buyLink = "",
+            isFavorite = false
         )
     )
 
@@ -148,39 +154,8 @@ fun SearchScreenSuccessPreview() {
                 searchQuery = "Android",
                 onQueryChange = {},
                 onSearch = {},
-                onBookClick = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "로딩 중")
-@Composable
-fun SearchScreenLoadingPreview() {
-    MaterialTheme {
-        Surface {
-            SearchContent(
-                uiState = BookSearchUiState.Loading,
-                searchQuery = "Android",
-                onQueryChange = {},
-                onSearch = {},
-                onBookClick = {}
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "검색 결과 없음")
-@Composable
-fun SearchScreenEmptyPreview() {
-    MaterialTheme {
-        Surface {
-            SearchContent(
-                uiState = BookSearchUiState.Empty,
-                searchQuery = "이상한 검색어",
-                onQueryChange = {},
-                onSearch = {},
-                onBookClick = {}
+                onBookClick = {},
+                onLikeClick = {}
             )
         }
     }

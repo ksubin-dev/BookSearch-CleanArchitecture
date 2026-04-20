@@ -11,7 +11,8 @@ fun BookmarkEntity.toDomain() = Book(
     subtitle = "",
     description = "",
     publisher = "",
-    buyLink = ""
+    buyLink = "",
+    isFavorite = true
 )
 
 fun Book.toEntity() = BookmarkEntity(
