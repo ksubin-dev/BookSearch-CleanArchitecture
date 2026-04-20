@@ -19,10 +19,14 @@ class BookSearchViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<BookSearchUiState>(BookSearchUiState.Empty)
     val uiState: StateFlow<BookSearchUiState> = _uiState.asStateFlow()
 
+    private var searchJob: kotlinx.coroutines.Job? = null
+
     fun searchBooks(query: String) {
         if (query.isBlank()) return
 
-        viewModelScope.launch {
+        searchJob?.cancel()
+
+        searchJob = viewModelScope.launch {
             _uiState.value = BookSearchUiState.Loading
 
             when (val result = getSearchBooksUseCase(query)) {

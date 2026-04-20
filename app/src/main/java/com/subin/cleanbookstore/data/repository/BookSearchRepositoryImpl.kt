@@ -16,6 +16,10 @@ class BookSearchRepositoryImpl @Inject constructor(
             val response = apiService.searchBooks(query)
             val books = response.items?.map { it.toDomain() } ?: emptyList()
             DataResult.Success(books)
+        } catch (e: java.net.UnknownHostException) {
+            DataResult.Error(Exception("네트워크 연결을 확인해 주세요."))
+        } catch (e: retrofit2.HttpException) {
+            DataResult.Error(Exception("서버 응답에 문제가 발생했습니다. (Error: ${e.code()})"))
         } catch (e: Exception) {
             DataResult.Error(e)
         }
