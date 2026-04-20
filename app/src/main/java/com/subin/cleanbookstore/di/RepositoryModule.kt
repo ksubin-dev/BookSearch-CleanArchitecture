@@ -1,7 +1,9 @@
 package com.subin.cleanbookstore.di
 
 import com.subin.cleanbookstore.data.repository.BookSearchRepositoryImpl
+import com.subin.cleanbookstore.data.repository.BookmarkRepositoryImpl
 import com.subin.cleanbookstore.domain.repository.BookSearchRepository
+import com.subin.cleanbookstore.domain.repository.BookmarkRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,4 +19,10 @@ abstract class RepositoryModule {
     abstract fun bindBookSearchRepository(
         bookSearchRepositoryImpl: BookSearchRepositoryImpl
     ): BookSearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBookmarkRepository(
+        bookmarkRepositoryImpl: BookmarkRepositoryImpl
+    ): BookmarkRepository
 }
