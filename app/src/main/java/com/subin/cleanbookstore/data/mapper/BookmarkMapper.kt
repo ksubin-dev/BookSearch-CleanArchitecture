@@ -12,12 +12,14 @@ fun BookmarkEntity.toDomain() = Book(
     description = "",
     publisher = "",
     buyLink = "",
-    isFavorite = true
+    isFavorite = true,
+    memo = memo
 )
 
 fun Book.toEntity() = BookmarkEntity(
     id = id,
     title = title,
     authors = authors.joinToString(", "),
-    imageUrl = imageUrl
+    imageUrl = imageUrl,
+    memo = memo
 )

@@ -8,4 +8,6 @@ interface BookmarkRepository {
     suspend fun saveBookmark(book: Book)
     suspend fun deleteBookmark(bookId: String)
     fun isBookmarked(bookId: String): Flow<Boolean>
+
+    suspend fun updateMemo(bookId: String, memo: String)
 }

@@ -29,17 +29,17 @@ class BookSearchViewModel @Inject constructor(
         getBookmarkListUseCase(),
         _loadState
     ) { results, bookmarks, loadState ->
+        val syncBooks = results.map { book ->
+            book.copy(isFavorite = bookmarks.any { it.id == book.id })
+        }
 
         when (loadState) {
-            is BookSearchUiState.Success -> {
-                val syncBooks = results.map { book ->
-                    book.copy(isFavorite = bookmarks.any { it.id == book.id })
-                }
-
+            is BookSearchUiState.Loading -> BookSearchUiState.Loading
+            is BookSearchUiState.Error -> BookSearchUiState.Error(loadState.message)
+            else -> {
                 if (syncBooks.isEmpty()) BookSearchUiState.Empty
                 else BookSearchUiState.Success(syncBooks)
             }
-            else -> loadState
         }
     }.stateIn(
         scope = viewModelScope,
