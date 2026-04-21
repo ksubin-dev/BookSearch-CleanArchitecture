@@ -37,7 +37,16 @@ fun SearchScreen(
         uiState = uiState,
         recentHistory = recentHistory,
         searchQuery = searchQuery,
-        onQueryChange = { searchQuery = it },
+        onQueryChange = { query ->
+            searchQuery = query
+            if (query.isEmpty()) {
+                viewModel.resetSearchState()
+            }
+        },
+        onClearQuery = {
+            searchQuery = ""
+            viewModel.resetSearchState()
+        },
         onSearch = {
             if (searchQuery.isNotBlank()) {
                 viewModel.searchBooks(searchQuery)
@@ -63,6 +72,7 @@ private fun SearchContent(
     searchQuery: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
+    onClearQuery: () -> Unit,
     onBookClick: (String) -> Unit,
     onLikeClick: (Book) -> Unit,
     onHistoryClick: (String) -> Unit,
@@ -79,8 +89,14 @@ private fun SearchContent(
             label = { Text("도서 검색") },
             placeholder = { Text("제목을 입력해 보세요") },
             trailingIcon = {
-                IconButton(onClick = onSearch) {
-                    Icon(imageVector = Icons.Default.Search, contentDescription = "검색 아이콘")
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = onClearQuery) {
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "지우기")
+                    }
+                } else {
+                    IconButton(onClick = onSearch) {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "검색 아이콘")
+                    }
                 }
             },
             singleLine = true,

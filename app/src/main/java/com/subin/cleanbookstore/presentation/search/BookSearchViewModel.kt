@@ -95,6 +95,11 @@ class BookSearchViewModel @Inject constructor(
         }
     }
 
+    fun resetSearchState() {
+        _searchResults.value = emptyList()
+        _loadState.value = BookSearchUiState.Empty
+    }
+
     fun onBookmarkClick(book: Book) {
         viewModelScope.launch {
             toggleBookmarkUseCase(book)
