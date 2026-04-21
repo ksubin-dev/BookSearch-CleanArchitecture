@@ -9,5 +9,6 @@ data class BookmarkEntity(
     val title: String,
     val authors: String,
     val imageUrl: String,
-    val addedAt: Long = System.currentTimeMillis()
+    val addedAt: Long = System.currentTimeMillis(),
+    val memo: String = ""
 )

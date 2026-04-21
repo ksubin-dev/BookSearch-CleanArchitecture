@@ -9,7 +9,8 @@ data class BookSearchResponse(
 data class BookDto(
     @SerializedName("id") val id: String?,
     @SerializedName("volumeInfo") val volumeInfo: VolumeInfoDto?,
-    @SerializedName("saleInfo") val saleInfo: SaleInfoDto?
+    @SerializedName("saleInfo") val saleInfo: SaleInfoDto?,
+    @SerializedName("accessInfo") val accessInfoDto: AccessInfoDto?
 )
 
 data class VolumeInfoDto(
@@ -19,6 +20,14 @@ data class VolumeInfoDto(
     @SerializedName("publisher") val publisher: String?,
     @SerializedName("description") val description: String?,
     @SerializedName("imageLinks") val imageLinks: ImageLinksDto?
+)
+data class AccessInfoDto(
+    @SerializedName("pdf") val pdf: PdfDto?
+)
+
+data class PdfDto(
+    @SerializedName("isAvailable") val isAvailable: Boolean,
+    @SerializedName("downloadLink") val downloadLink: String?
 )
 
 data class ImageLinksDto(

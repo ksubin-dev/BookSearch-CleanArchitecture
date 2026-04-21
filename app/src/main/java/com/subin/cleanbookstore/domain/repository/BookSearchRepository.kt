@@ -5,4 +5,5 @@ import com.subin.cleanbookstore.domain.model.Book
 
 interface BookSearchRepository {
     suspend fun searchBooks(query: String): DataResult<List<Book>>
+    suspend fun getBookDetails(bookId: String): DataResult<Book>
 }

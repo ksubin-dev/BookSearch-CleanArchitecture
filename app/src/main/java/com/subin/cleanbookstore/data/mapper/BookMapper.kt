@@ -12,6 +12,7 @@ fun BookDto.toDomain(): Book {
         publisher = volumeInfo?.publisher ?: "출판사 정보 없음",
         description = volumeInfo?.description ?: "",
         imageUrl = volumeInfo?.imageLinks?.thumbnail?.replace("http:", "https:") ?: "",
-        buyLink = saleInfo?.buyLink ?: ""
+        buyLink = saleInfo?.buyLink ?: "",
+        pdfDownloadLink = accessInfoDto?.pdf?.downloadLink
     )
 }

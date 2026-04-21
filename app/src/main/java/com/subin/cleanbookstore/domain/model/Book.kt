@@ -9,5 +9,7 @@ data class Book(
     val description: String,
     val imageUrl: String,
     val buyLink: String,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val pdfDownloadLink: String? = null,
+    val memo: String = ""
 )

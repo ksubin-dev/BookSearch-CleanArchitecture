@@ -17,4 +17,7 @@ interface BookmarkDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM bookmarks WHERE id = :id)")
     fun isBookmarked(id: String): Flow<Boolean>
+
+    @Query("UPDATE bookmarks SET memo = :memo WHERE id = :id")
+    suspend fun updateMemo(id: String, memo: String)
 }
