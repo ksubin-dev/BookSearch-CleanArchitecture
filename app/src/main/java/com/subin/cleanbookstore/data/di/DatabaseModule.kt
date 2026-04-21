@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.subin.cleanbookstore.data.local.BookDatabase
 import com.subin.cleanbookstore.data.local.dao.BookmarkDao
+import com.subin.cleanbookstore.data.local.dao.SearchHistoryDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,5 +32,11 @@ object DatabaseModule {
     @Singleton
     fun provideBookmarkDao(database: BookDatabase): BookmarkDao {
         return database.bookmarkDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchHistoryDao(database: BookDatabase): SearchHistoryDao {
+        return database.searchHistoryDao()
     }
 }

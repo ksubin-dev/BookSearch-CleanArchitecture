@@ -5,8 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.subin.cleanbookstore.core.DataResult
 import com.subin.cleanbookstore.domain.model.Book
+import com.subin.cleanbookstore.domain.usecase.DeleteSearchHistoryUseCase
 import com.subin.cleanbookstore.domain.usecase.GetBookmarkListUseCase
+import com.subin.cleanbookstore.domain.usecase.GetRecentSearchHistoryUseCase
 import com.subin.cleanbookstore.domain.usecase.GetSearchBooksUseCase
+import com.subin.cleanbookstore.domain.usecase.SaveSearchKeywordUseCase
 import com.subin.cleanbookstore.domain.usecase.ToggleBookmarkUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -17,9 +20,18 @@ import javax.inject.Inject
 class BookSearchViewModel @Inject constructor(
     private val getSearchBooksUseCase: GetSearchBooksUseCase,
     private val getBookmarkListUseCase: GetBookmarkListUseCase,
-    private val toggleBookmarkUseCase: ToggleBookmarkUseCase
+    private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
+    private val getRecentSearchHistoryUseCase: GetRecentSearchHistoryUseCase,
+    private val saveSearchKeywordUseCase: SaveSearchKeywordUseCase,
+    private val deleteSearchHistoryUseCase: DeleteSearchHistoryUseCase
 ) : ViewModel() {
 
+    val recentSearchHistory: StateFlow<List<String>> = getRecentSearchHistoryUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
     private val _searchResults = MutableStateFlow<List<Book>>(emptyList())
 
     private val _loadState = MutableStateFlow<BookSearchUiState>(BookSearchUiState.Empty)
@@ -54,6 +66,8 @@ class BookSearchViewModel @Inject constructor(
 
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
+            saveSearchKeywordUseCase(query)
+
             _loadState.value = BookSearchUiState.Loading
 
             when (val result = getSearchBooksUseCase(query)) {
@@ -66,6 +80,18 @@ class BookSearchViewModel @Inject constructor(
                     _loadState.value = BookSearchUiState.Error(errorMessage)
                 }
             }
+        }
+    }
+
+    fun deleteHistory(keyword: String) {
+        viewModelScope.launch {
+            deleteSearchHistoryUseCase.deleteKeyword(keyword)
+        }
+    }
+
+    fun clearAllHistory() {
+        viewModelScope.launch {
+            deleteSearchHistoryUseCase.clearAll()
         }
     }
 
