@@ -7,6 +7,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.subin.cleanbookstore.presentation.bookmark.BookmarkScreen
+import com.subin.cleanbookstore.presentation.bookmark.BookmarkViewModel
 import com.subin.cleanbookstore.presentation.detail.DetailScreen
 import com.subin.cleanbookstore.presentation.search.BookSearchViewModel
 import com.subin.cleanbookstore.presentation.search.SearchScreen
@@ -38,9 +40,15 @@ fun MainNavHost(
             DetailScreen(bookId = detail.bookId, onBackClick = { navController.popBackStack() })
         }
 
-        // 3. 즐겨찾기 화면 (나중에 구현)
         composable<NavRoute.Bookmark> {
-            // BookmarkScreen()
+            val viewModel: BookmarkViewModel = hiltViewModel()
+
+            BookmarkScreen(
+                viewModel = viewModel,
+                onBookClick = { id ->
+                    navController.navigate(NavRoute.Detail(bookId = id))
+                }
+            )
         }
     }
 }
