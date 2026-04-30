@@ -25,7 +25,7 @@ class BookPagingSource(
 
             val books = response.items?.map { it.toDomain() } ?: emptyList()
 
-            val nextKey = if (books.isEmpty() || books.size < params.loadSize) {
+            val nextKey = if (books.isEmpty()) {
                 null
             } else {
                 position + params.loadSize
