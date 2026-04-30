@@ -1,9 +1,10 @@
 package com.subin.cleanbookstore.presentation.search
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.subin.cleanbookstore.core.DataResult
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.map
 import com.subin.cleanbookstore.domain.model.Book
 import com.subin.cleanbookstore.domain.usecase.DeleteSearchHistoryUseCase
 import com.subin.cleanbookstore.domain.usecase.GetBookmarkListUseCase
@@ -12,6 +13,7 @@ import com.subin.cleanbookstore.domain.usecase.GetSearchBooksUseCase
 import com.subin.cleanbookstore.domain.usecase.SaveSearchKeywordUseCase
 import com.subin.cleanbookstore.domain.usecase.ToggleBookmarkUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,56 +34,36 @@ class BookSearchViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
-    private val _searchResults = MutableStateFlow<List<Book>>(emptyList())
 
-    private val _loadState = MutableStateFlow<BookSearchUiState>(BookSearchUiState.Empty)
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
 
-    val uiState: StateFlow<BookSearchUiState> = combine(
-        _searchResults,
-        getBookmarkListUseCase(),
-        _loadState
-    ) { results, bookmarks, loadState ->
-        val syncBooks = results.map { book ->
-            book.copy(isFavorite = bookmarks.any { it.id == book.id })
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val searchPagingData: Flow<PagingData<Book>> = _searchQuery
+        .filter { it.isNotBlank() }
+        .flatMapLatest { query ->
+            getSearchBooksUseCase(query)
         }
-
-        when (loadState) {
-            is BookSearchUiState.Loading -> BookSearchUiState.Loading
-            is BookSearchUiState.Error -> BookSearchUiState.Error(loadState.message)
-            else -> {
-                if (syncBooks.isEmpty()) BookSearchUiState.Empty
-                else BookSearchUiState.Success(syncBooks)
+        .cachedIn(viewModelScope)
+        .combine(getBookmarkListUseCase()) { pagingData, bookmarks ->
+            pagingData.map { book ->
+                book.copy(isFavorite = bookmarks.any { it.id == book.id })
             }
         }
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = BookSearchUiState.Empty
-    )
-
-    private var searchJob: kotlinx.coroutines.Job? = null
 
     fun searchBooks(query: String) {
         if (query.isBlank()) return
 
-        searchJob?.cancel()
-        searchJob = viewModelScope.launch {
+        viewModelScope.launch {
             saveSearchKeywordUseCase(query)
-
-            _loadState.value = BookSearchUiState.Loading
-
-            when (val result = getSearchBooksUseCase(query)) {
-                is DataResult.Success -> {
-                    _searchResults.value = result.data
-                    _loadState.value = BookSearchUiState.Success(result.data)
-                }
-                is DataResult.Error -> {
-                    val errorMessage = result.exception.message ?: "검색 중 오류가 발생했습니다."
-                    _loadState.value = BookSearchUiState.Error(errorMessage)
-                }
-            }
         }
+        _searchQuery.value = query
     }
+
+    fun resetSearchState() {
+        _searchQuery.value = ""
+    }
+
 
     fun deleteHistory(keyword: String) {
         viewModelScope.launch {
@@ -93,11 +75,6 @@ class BookSearchViewModel @Inject constructor(
         viewModelScope.launch {
             deleteSearchHistoryUseCase.clearAll()
         }
-    }
-
-    fun resetSearchState() {
-        _searchResults.value = emptyList()
-        _loadState.value = BookSearchUiState.Empty
     }
 
     fun onBookmarkClick(book: Book) {
