@@ -19,6 +19,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import com.subin.cleanbookstore.domain.model.Book
 import com.subin.cleanbookstore.presentation.components.BookItem
 
@@ -27,14 +31,14 @@ fun SearchScreen(
     viewModel: BookSearchViewModel,
     onBookClick: (String) -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchPagingItems = viewModel.searchPagingData.collectAsLazyPagingItems()
     val recentHistory by viewModel.recentSearchHistory.collectAsStateWithLifecycle()
 
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
 
     SearchContent(
-        uiState = uiState,
+        books = searchPagingItems,
         recentHistory = recentHistory,
         searchQuery = searchQuery,
         onQueryChange = { query ->
@@ -67,7 +71,7 @@ fun SearchScreen(
 
 @Composable
 private fun SearchContent(
-    uiState: BookSearchUiState,
+    books: LazyPagingItems<Book>,
     recentHistory: List<String>,
     searchQuery: String,
     onQueryChange: (String) -> Unit,
@@ -109,7 +113,7 @@ private fun SearchContent(
                 .fillMaxSize()
                 .weight(1f)
         ) {
-            if (uiState is BookSearchUiState.Empty) {
+            if (searchQuery.isEmpty()) {
                 RecentSearchList(
                     history = recentHistory,
                     onHistoryClick = onHistoryClick,
@@ -117,36 +121,53 @@ private fun SearchContent(
                     onClearAllHistory = onClearAllHistory
                 )
             } else {
-                when (uiState) {
-                    is BookSearchUiState.Loading -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 16.dp)
+                ) {
+                    items(
+                        count = books.itemCount
+                    ) { index ->
+                        val book = books[index]
+                        if (book != null) {
+                            BookItem(
+                                book = book,
+                                isLiked = book.isFavorite,
+                                onClick = { onBookClick(book.id) },
+                                onLikeClick = { onLikeClick(book) }
+                            )
+                        }
                     }
-                    is BookSearchUiState.Success -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 16.dp)
-                        ) {
-                            items(
-                                items = uiState.books,
-                                key = { it.id }
-                            ) { book ->
-                                BookItem(
-                                    book = book,
-                                    isLiked = book.isFavorite,
-                                    onClick = { onBookClick(book.id) },
-                                    onLikeClick = { onLikeClick(book) }
-                                )
+
+                    books.apply {
+                        when {
+                            loadState.refresh is LoadState.Loading -> {
+                                item {
+                                    Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                                        CircularProgressIndicator()
+                                    }
+                                }
+                            }
+                            loadState.append is LoadState.Loading -> {
+                                item {
+                                    Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                    }
+                                }
+                            }
+                            loadState.refresh is LoadState.Error -> {
+                                val error = books.loadState.refresh as LoadState.Error
+                                item {
+                                    Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                                        Text(
+                                            text = error.error.localizedMessage ?: "에러가 발생했습니다.",
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
-                    is BookSearchUiState.Error -> {
-                        Text(
-                            text = uiState.message,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-                    else -> {}
                 }
             }
         }

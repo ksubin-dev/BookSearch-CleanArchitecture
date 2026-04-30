@@ -13,6 +13,7 @@ interface BooksApiService {
     @GET("volumes")
     suspend fun searchBooks(
         @Query("q") query: String,
+        @Query("startIndex") startIndex: Int = 0,
         @Query("maxResults") maxResults: Int = 10,
         @Query("key") apiKey: String = BuildConfig.BOOKS_API_KEY
     ): BookSearchResponse
